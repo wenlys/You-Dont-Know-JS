@@ -1,60 +1,85 @@
-# You Don't Know JS: *this* & Object Prototypes
-# Chapter 2: `this` All Makes Sense Now!
+# 你不懂JS: *this* & Object Prototypes
+# 第二章: `this` 豁然开朗！
 
 In Chapter 1, we discarded various misconceptions about `this` and learned instead that `this` is a binding made for each function invocation, based entirely on its **call-site** (how the function is called).
 
+在第一章中，我们摒弃了关于`this`的种种误解，学习了`this`是完全根据**call-site**（函数是如何被调用的）为每次函数调用创建的绑定。
+
 ## Call-site
+## Call-site（调用点）
 
 To understand `this` binding, we have to understand the call-site: the location in code where a function is called (**not where it's declared**). We must inspect the call-site to answer the question: what's *this* `this` a reference to?
 
+为了理解`this`绑定，我们不得不理解call-site：函数在代码中被调用的位置（**不是被声明的位置**）。我们必须考察call-site来回答这个问题：`this`指向什么？
+
 Finding the call-site is generally: "go locate where a function is called from", but it's not always that easy, as certain coding patterns can obscure the *true* call-site.
+
+寻找call-site通常意味着：“去找到函数是从哪里调用的”，但不总是那么简单，正如特定的编码模式会使**真正**的call-site十分隐晦。
 
 What's important is to think about the **call-stack** (the stack of functions that have been called to get us to the current moment in execution). The call-site we care about is *in* the invocation *before* the currently executing function.
 
+考虑**call-stack（调用栈）**是十分重要的（使我们到达当前执行位置而被调用的函数的栈）。我们关心的call-site发生在当前执行的函数调用**之前**。
+
 Let's demonstrate call-stack and call-site:
+
+我们来展示一下call-stack和call-site：
 
 ```js
 function baz() {
-    // call-stack is: `baz`
-    // so, our call-site is in the global scope
+    // call-stack为: `baz`
+    // 我们的call-site位于全局作用域（global-scope）
 
     console.log( "baz" );
-    bar(); // <-- call-site for `bar`
+    bar(); // <-- `bar`的call-site
 }
 
 function bar() {
-    // call-stack is: `baz` -> `bar`
-    // so, our call-site is in `baz`
+    // call-stack为: `baz` -> `bar`
+    // 我们的call-site位于`baz`
 
     console.log( "bar" );
-    foo(); // <-- call-site for `foo`
+    foo(); // <-- `foo`的call-site
 }
 
 function foo() {
-    // call-stack is: `baz` -> `bar` -> `foo`
-    // so, our call-site is in `bar`
-
+    // call-stack为: `baz` -> `bar` -> `foo`
+    // 我们的call-site位于`bar`
+    
     console.log( "foo" );
 }
 
-baz(); // <-- call-site for `baz`
+baz(); // <-- `baz`的call-site 
 ```
 
 Take care when analyzing code to find the actual call-site (from the call-stack), because it's the only thing that matters for `this` binding.
 
+在分析代码寻找真正的call-site（从call-stack）时要小心，因为它是影响`this`绑定的唯一因素。
+
 **Note:** You can visualize a call-stack in your mind by looking at the chain of function calls in order, as we did with the comments in the above snippet. But this is painstaking and error-prone. Another way of seeing the call-stack is using a debugger tool in your browser. Most modern desktop browsers have built-in developer tools, which includes a JS debugger. In the above snippet, you could have set a breakpoint in the tools for the first line of the `foo()` function, or simply inserted the `debugger;` statement on that first line. When you run the page, the debugger will pause at this location, and will show you a list of the functions that have been called to get to that line, which will be your call stack. So, if you're trying to diagnose `this` binding, use the developer tools to get the call-stack, then find the second item from the top, and that will show you the real call-site.
 
+**注意：**正如我们在上面的代码片段中的注释一样，你通过顺序观察函数的调用链来在你的大脑中将call-stack图形化。但是这很痛苦而且易错。另外一种观察call-stack的方法是使用浏览器的调试工具。大多数现代的桌面浏览器都内建开发者工具，其中就包含JS调试器。在上面的代码片段中，你可以在调试工具中为`foo()`函数的第一行设置一个断点，或者简单地在哪一行插入一个`debugger;`语句。当你运行这个网页时，调试器将会停在这个位置，并且给你一个到达这一行代码所调用的方法的一览，这就是你的call-stack。所以，如果你试图调试`this`绑定，使用开发者工具得到call-stack，之后从上开始找到第二个记录，他就是你的真正的call-site。
+
 ## Nothing But Rules
+## 仅仅是规则
 
 We turn our attention now to *how* the call-site determines where `this` will point during the execution of a function.
 
+我们将注意力转移到call-site如何决定`this`将要在函数的执行过程中指向何处。
+
 You must inspect the call-site and determine which of 4 rules applies. We will first explain each of these 4 rules independently, and then we will illustrate their order of precedence, if multiple rules *could* apply to the call-site.
 
+你必须考察call-site并决定4个规则的哪一个适用。我们首先独立地解释一下这4个规则中的每一个，之后我们会描绘一下如果多个规则都适用于call-site时，它们的优先顺序。
+
 ### Default Binding
+### Default Binding（默认绑定）
 
 The first rule we will examine comes from the most common case of function calls: standalone function invocation. Think of *this* `this` rule as the default catch-all rule when none of the other rules apply.
 
+我们考察的第一个规则，来自于最普遍的函数调用形式：独立函数调用。这个`this`规则可以当做当没有其他规则适用时的默认规则。
+
 Consider this code:
+
+考虑如下代码：
 
 ```js
 function foo() {
@@ -68,11 +93,19 @@ foo(); // 2
 
 The first thing to note, if you were not already aware, is that variables declared in the global scope, as `var a = 2` is, are synonymous with global-object properties of the same name. They're not copies of each other, they *are* each other. Think of it as two sides of the same coin.
 
+第一点要注意的是——如果你还没有发觉——在global scope（全局作用域）中声明的变量，比如`var a = 2`，是global-object（全局对象）的同名属性的同义词。它们不会相互拷贝，它们**就是**彼此。好比一个硬币的两面。
+
 Secondly, we see that when `foo()` is called, `this.a` resolves to our global variable `a`. Why? Because in this case, the *default binding* for `this` applies to the function call, and so points `this` at the global object.
+
+第二，我们看到当`foo()`被调用时，`this.a`解析为我们的全局变量`a`。为什么？因为在这种情况下，为`this`进行**default binding（默认绑定）**适用于这个方法调用，如此`this`指向global-object（全局对象）。
 
 How do we know that the *default binding* rule applies here? We examine the call-site to see how `foo()` is called. In our snippet, `foo()` is called with a plain, un-decorated function reference. None of the other rules we will demonstrate will apply here, so the *default binding* applies instead.
 
+我们怎么知道**default binding（默认绑定）**规则适用于这里？我们检查call-site来看看`foo()`是如何被调用的。在我们的代码片段中，`foo()`是用一个直白的，无修饰的函数引用调用的。没有任何其他的我们将要展示的规则适用于这里，所以只有实施**default binding（默认绑定）**。
+
 If `strict mode` is in effect, the global object is not eligible for the *default binding*, so the `this` is instead set to `undefined`.
+
+如果`strict mode`生效，那么在**default binding（默认绑定）**中使用global-object（全局对象）是不合法的，所以此时`this`会被设置为`undefined`。
 
 ```js
 function foo() {
@@ -87,6 +120,8 @@ foo(); // TypeError: `this` is `undefined`
 ```
 
 A subtle but important detail is: even though the overall `this` binding rules are entirely based on the call-site, the global object is **only** eligible for the *default binding* if the **contents** of `foo()` are **not** running in `strict mode`; the `strict mode` state of the call-site of `foo()` is irrelevant.
+
+一个微妙而重要的细节是：
 
 ```js
 function foo() {
