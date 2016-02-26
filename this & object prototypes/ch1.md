@@ -336,26 +336,44 @@ There's more than one mistake in this snippet. While it may seem contrived, the 
 
 Firstly, an attempt is made to reference the `bar()` function via `this.bar()`. It is almost certainly an *accident* that it works, but we'll explain the *how* of that shortly. The most natural way to have invoked `bar()` would have been to omit the leading `this.` and just make a lexical reference to the identifier.
 
-首先，试图通过`this.bar()`来引用`bar()`函数。它几乎可以说是**碰巧**能够工作，我们过一会儿再解释为什么。调用`bar()`最自然的方式是省略开头的 `this.`，而
+首先，试图通过`this.bar()`来引用`bar()`函数。它几乎可以说是**碰巧**能够工作，我们过一会儿再解释为什么。调用`bar()`最自然的方式是省略开头的 `this.`，而仅使用标识符的词法引用。
 
 However, the developer who writes such code is attempting to use `this` to create a bridge between the lexical scopes of `foo()` and `bar()`, so that `bar()` has access to the variable `a` in the inner scope of `foo()`. **No such bridge is possible.** You cannot use a `this` reference to look something up in a lexical scope. It is not possible.
 
+然而，写这段代码的开发者试图用`this`来建立一座桥来连接`foo()`和`bar()`的词法作用域，所以`bar()`可以访问位于`foo()`内部作用域的变量`a`。**这种桥接是不可能的。**你不能用`this`引用来查找词法作用域中的东西。那是不可能的。
+
 Every time you feel yourself trying to mix lexical scope look-ups with `this`, remind yourself: *there is no bridge*.
 
+每当你觉得你自己在试着将词法作用域查询和`this`混在一起时，提醒你自己：**这里没有桥**。
+
 ## What's `this`?
+## 什么是 `this`？
 
 Having set aside various incorrect assumptions, let us now turn our attention to how the `this` mechanism really works.
+在列举了种种不正确的臆想之后，现在让我们将注意力转向`this`机制实际上是如何工作的。
 
 We said earlier that `this` is not an author-time binding but a runtime binding. It is contextual based on the conditions of the function's invocation. `this` binding has nothing to do with where a function is declared, but has instead everything to do with the manner in which the function is called.
 
+我们以前说过，`this`不是一个编写时绑定，而是一个运行时绑定。它基于函数调用的上下文条件（TODO）。`this`绑定与函数在哪里声明无关，而与函数被调用的方式有关。
+
 When a function is invoked, an activation record, otherwise known as an execution context, is created. This record contains information about where the function was called from (the call-stack), *how* the function was invoked, what parameters were passed, etc. One of the properties of this record is the `this` reference which will be used for the duration of that function's execution.
 
+当函数别调用时，一个活动记录，也被称为执行上下文环境，会被建立。这个记录含有：函数在哪里被调用（调用栈——call-stack），函数是如何被调用的，什么参数被传递了，等等信息。在那个函数执行期间将被使用的`this`引用就是这个记录的属性之一。
+
 In the next chapter, we will learn to find a function's **call-site** to determine how its execution will bind `this`.
+在下一章中，我们将会学习找到函数的**调用点（call-site）**来决定它的执行过程如何绑定`this`.
 
 ## Review (TL;DR)
+## 复习 (TL;DR)
 
 `this` binding is a constant source of confusion for the JavaScript developer who does not take the time to learn how the mechanism actually works. Guesses, trial-and-error, and blind copy-n-paste from Stack Overflow answers is not an effective or proper way to leverage *this* important `this` mechanism.
 
+对于那些没有花过时间学习这种机制究竟如何工作的Javascript开发者而言，`this`绑定一直是困惑的根源。猜测，试错，从Stack Overflow的答案中盲目地复制粘贴，都不是利用这个重要的`this`机制的有效或合适的方法。
+
 To learn `this`, you first have to learn what `this` is *not*, despite any assumptions or misconceptions that may lead you down those paths. `this` is neither a reference to the function itself, nor is it a reference to the function's *lexical* scope.
 
+为了学习`this`，你首先不得不学习`this`**不是**什么，不管什么臆测或误解将你引入歧途。`this`既不是函数自身的引用，也不是函数**词法**作用域的引用。
+
 `this` is actually a binding that is made when a function is invoked, and *what* it references is determined entirely by the call-site where the function is called.
+
+`this`实际上是一个在函数被调用时制造的绑定，它指向**什么**，是完全由函数被调用时的调用点决定的。
