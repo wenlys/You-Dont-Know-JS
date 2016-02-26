@@ -121,7 +121,7 @@ foo(); // TypeError: `this` is `undefined`
 
 A subtle but important detail is: even though the overall `this` binding rules are entirely based on the call-site, the global object is **only** eligible for the *default binding* if the **contents** of `foo()` are **not** running in `strict mode`; the `strict mode` state of the call-site of `foo()` is irrelevant.
 
-一个微妙而重要的细节是：
+一个微妙而重要的细节是：即便整个`this`绑定规则完全基于call-site，如果`foo()`的**内容**没有运行在`strict mode`下，对于*default binding*来说global object是**唯一**合法的；`foo()`的call-site的`strict mode`状态是无关的。
 
 ```js
 function foo() {
@@ -139,11 +139,17 @@ var a = 2;
 
 **Note:** Intentionally mixing `strict mode` and non-`strict mode` together in your own code is generally frowned upon. Your entire program should probably either be **Strict** or **non-Strict**. However, sometimes you include a third-party library that has different **Strict**'ness than your own code, so care must be taken over these subtle compatibility details.
 
+**注意：**在你的代码中故意混用`strict mode`和非`strict mode`通常让人皱眉头。你的程序整体可能应该不是`strict mode`就是非`strict mode`。然而，你肯能会引入与你的代码的`strict mode`不同的第三方包，所以这些微妙的兼容性细节必须要小心。
+
 ### Implicit Binding
+### Implicit Binding（隐式绑定）
 
 Another rule to consider is: does the call-site have a context object, also referred to as an owning or containing object, though *these* alternate terms could be slightly misleading.
 
+另一个要考虑的规则是：
+
 Consider:
+考虑：
 
 ```js
 function foo() {
@@ -159,6 +165,8 @@ obj.foo(); // 2
 ```
 
 Firstly, notice the manner in which `foo()` is declared and then later added as a reference property onto `obj`. Regardless of whether `foo()` is initially declared *on* `obj`, or is added as a reference later (as this snippet shows), in neither case is the **function** really "owned" or "contained" by the `obj` object.
+
+首先，注意`foo()`的声明，以及后来它是如何作为属性加入`obj`的方式。无论是否`foo()`最初是在`obj`**上**声明的，还是后来作为引用追加的（如代码片段所示），这个函数都被`obj`对象所**拥有**或**包含**。
 
 However, the call-site *uses* the `obj` context to **reference** the function, so you *could* say that the `obj` object "owns" or "contains" the **function reference** at the time the function is called.
 
